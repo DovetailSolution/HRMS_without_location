@@ -27,6 +27,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -208,7 +209,7 @@ public class AttendanceServlet extends HttpServlet {
 	//-------------------------------------------------------------------------------------------------
 	        //String token1=(String) session.getAttribute("token");
 	        System.out.println(token);
-	        
+	       
 	        if (token == null || token.isEmpty()) {
 	            jsonResponse.put("status", "error");
 	            jsonResponse.put("message", "Missing token");
@@ -246,21 +247,28 @@ public class AttendanceServlet extends HttpServlet {
 	            Class.forName("com.mysql.cj.jdbc.Driver");
 	            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
 	
-	            if ("signin".equals(action)) {
+	            if ("signin".equals(action)) 
+	            {
 	                String latitude = request.getParameter("latitude");
 	                String longitude = request.getParameter("longitude");
 	
 	                String location = fetchlocation(latitude, longitude);
-	
+	                ZoneId zoneId = ZoneId.of("Asia/Kolkata");
+	                
 	                Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
-	
+	                
+	                LocalDateTime SignIn = currentTimestamp.toInstant().atZone(zoneId).toLocalDateTime();
+
+	                // Format the Date-Time
+	                String signInTimeIST = DATE_TIME_FORMATTER.format(SignIn);
+
 	                PreparedStatement ps = con.prepareStatement("INSERT INTO attendance (user_id, empId, sign_in_time, location, latitude, longitude) VALUES ((SELECT id FROM users WHERE username = ?), ?, ?, ?, ?, ?)");
 	                
 	                //PreparedStatement ps = con.prepareStatement("INSERT INTO attendance (user_id, empId, sign_in_time) VALUES ((SELECT id FROM users WHERE username = ?), ?, ?)");
 	
 	                ps.setString(1, username1);
 	                ps.setString(2, empid);
-	                ps.setTimestamp(3, currentTimestamp);
+	                ps.setString(3, signInTimeIST);
 	                ps.setString(4, location);
 	                ps.setString(5, latitude);
 	               ps.setString(6, longitude);
@@ -268,7 +276,7 @@ public class AttendanceServlet extends HttpServlet {
 	                ps.executeUpdate();
 	
 	                session.setAttribute("signedIn", true);
-	                session.setAttribute("lastSignInTime", currentTimestamp);
+	                session.setAttribute("lastSignInTime", signInTimeIST);
 	                session.setAttribute("lastSignOutTime", null);
 	                session.setAttribute("location", location);
 	
@@ -278,7 +286,7 @@ public class AttendanceServlet extends HttpServlet {
 	                {
 	                    jsonResponse.put("status", "success");
 	                    jsonResponse.put("message", "Sign in successful.");
-	                    jsonResponse.put("signInTime", DATE_TIME_FORMATTER.format(currentTimestamp.toLocalDateTime()));
+	                    jsonResponse.put("signInTime", signInTimeIST);
 	                    jsonResponse.put("location", location);
 	                    jsonResponse.put("token", token);
 	                    
@@ -292,7 +300,7 @@ public class AttendanceServlet extends HttpServlet {
 	                {
 	                    request.setAttribute("status", "success");
 	                    request.setAttribute("message", "Sign in successful.");
-	                    request.setAttribute("signInTime", DATE_TIME_FORMATTER.format(currentTimestamp.toLocalDateTime()));
+	                    request.setAttribute("signInTime", signInTimeIST);
 	                    request.setAttribute("location", location);
 	                    request.setAttribute("token", token);
 	                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -306,14 +314,20 @@ public class AttendanceServlet extends HttpServlet {
 	                String longitude = request.getParameter("longitude");
 	
 	                String location = fetchlocation(latitude, longitude);
+	                ZoneId zoneId = ZoneId.of("Asia/Kolkata");
 	
 	                Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+	                
+	                LocalDateTime SignOut = currentTimestamp.toInstant().atZone(zoneId).toLocalDateTime();
+
+	                // Format the Date-Time
+	                String signOutTimeIST = DATE_TIME_FORMATTER.format(SignOut);
 	
 	                PreparedStatement ps = con.prepareStatement("UPDATE attendance SET sign_out_time = ?, sign_out_location = ?, sign_out_latitude = ?, sign_out_longitude = ? WHERE user_id = (SELECT id FROM users WHERE username = ?) AND sign_out_time IS NULL");
 	                
 	                //PreparedStatement ps = con.prepareStatement("UPDATE attendance SET sign_out_time = ? WHERE user_id = (SELECT id FROM users WHERE username = ?) AND sign_out_time IS NULL");
 	
-	                ps.setTimestamp(1, currentTimestamp);
+	                ps.setString(1, signOutTimeIST);
 	                ps.setString(2, location);
 	                ps.setString(3, latitude);
 	                ps.setString(4, longitude);
@@ -321,7 +335,7 @@ public class AttendanceServlet extends HttpServlet {
 	                ps.executeUpdate();
 	
 	                session.setAttribute("signedIn", false);
-	                session.setAttribute("lastSignOutTime", currentTimestamp);
+	                session.setAttribute("lastSignOutTime", signOutTimeIST);
 	                
 	                //String token = (String) session.getAttribute("token");
 	                
@@ -329,7 +343,7 @@ public class AttendanceServlet extends HttpServlet {
 	                {
 	                    jsonResponse.put("status", "success");
 	                    jsonResponse.put("message", "Sign out successful.");
-	                    jsonResponse.put("signOutTime", DATE_TIME_FORMATTER.format(currentTimestamp.toLocalDateTime()));
+	                    jsonResponse.put("signOutTime", signOutTimeIST);
 	                    jsonResponse.put("location", location);
 	                    jsonResponse.put("token", token);
 	                    response.setStatus(HttpServletResponse.SC_OK);
@@ -342,7 +356,7 @@ public class AttendanceServlet extends HttpServlet {
 	                {
 	                    request.setAttribute("status", "success");
 	                    request.setAttribute("message", "Sign out successful.");
-	                    request.setAttribute("signOutTime", DATE_TIME_FORMATTER.format(currentTimestamp.toLocalDateTime()));
+	                    request.setAttribute("signOutTime", signOutTimeIST);
 	                    request.setAttribute("location", location);
 	                    request.setAttribute("token", token);
 	                    request.getRequestDispatcher("dashboard.jsp").forward(request, response);
@@ -442,7 +456,8 @@ public class AttendanceServlet extends HttpServlet {
 	                        response.setContentType("application/json");
 	                        response.setCharacterEncoding("UTF-8");
 	                        response.getWriter().write(jsonResponse.toString());
-	                    } else {
+	                    } 
+	                    else {
 	                        request.setAttribute("status", "error");
 	                        request.setAttribute("message", "yearMonth parameter is missing.");
 	                        request.getRequestDispatcher("error.jsp").forward(request, response);
@@ -503,7 +518,7 @@ public class AttendanceServlet extends HttpServlet {
 	                        table.setWidthPercentage(100);
 	                        table.addCell("Sign In Time");
 	                        table.addCell("Sign Out Time");
-	                        table.addCell("Location");
+	                        table.addCell("Sign In Location");
 	                        table.addCell("Sign Out Location");
 
 	                        for (AttendanceRecord record : records) {
@@ -516,9 +531,11 @@ public class AttendanceServlet extends HttpServlet {
 	                        }
 
 	                        document.add(table);
-	                    } catch (DocumentException e) {
+	                    } 
+	                    catch (DocumentException e) {
 	                        e.printStackTrace();
-	                    } finally {
+	                    } 
+	                    finally {
 	                        if (document.isOpen()) {
 	                            document.close(); // Ensure document is closed properly
 	                        }
@@ -526,10 +543,13 @@ public class AttendanceServlet extends HttpServlet {
 	                            outputStream.close();
 	                        }
 	                    }
-	                } catch (SQLException e) {
+	                } 
+	                catch (SQLException e) {
 	                    e.printStackTrace();
-	                } finally {
-	                    // Close resources properly
+	                } 
+	                finally 
+	                {
+	                    // Close resources 
 	                    try {
 	                        if (rs != null) rs.close();
 	                        if (ps != null) ps.close();

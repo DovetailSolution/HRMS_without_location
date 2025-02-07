@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List, java.util.Map" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -72,21 +73,27 @@
 <body>
 
     <h1>Notice Board</h1>
-    
+
     <table>
         <tr>
-            <th>ID</th>
             <th>Date</th>
             <th>Message</th>
         </tr>
         <%
-            java.sql.ResultSet rs = (java.sql.ResultSet) request.getAttribute("resultSet");
-            while (rs != null && rs.next()) {
+            List<Map<String, Object>> noticesList = (List<Map<String, Object>>) request.getAttribute("noticesList");
+            if (noticesList != null && !noticesList.isEmpty()) {
+                for (Map<String, Object> notice : noticesList) {
         %>
         <tr>
-            <td><%= rs.getInt("id") %></td>
-            <td><%= rs.getDate("date") %></td>
-            <td><%= rs.getString("message") %></td>
+            <td><%= notice.get("Date") %></td>
+            <td><%= notice.get("Message") %></td>
+        </tr>
+        <%
+                }
+            } else {
+        %>
+        <tr>
+            <td colspan="2">No notices available.</td>
         </tr>
         <%
             }
