@@ -54,7 +54,7 @@ import io.jsonwebtoken.security.Keys;
 @WebServlet(name = "attendance", urlPatterns = { "/attendance" })
 public class AttendanceServlet extends HttpServlet {
 
-    private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyChwWhY3MT7WGJkC6IkJSgK5vyUehcjnDY";
+    //private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyChwWhY3MT7WGJkC6IkJSgK5vyUehcjnDY";
     
     //private static final String GEOCODING_API_URL="https://api-bdc.net/data/reverse-geocode?latitude=%s&longitude=%s&localityLanguage=en&key=bdc_387285a4265a47268f553510f766c48f";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -434,7 +434,8 @@ public class AttendanceServlet extends HttpServlet {
 	                    response.getWriter().write(jsonResponse.toString());
 	                    response.getWriter().flush();
 	                    response.getWriter().close();
-	                } else {
+	                } 
+	                else {
 	                    request.setAttribute("attendanceRecords", dailyRecords);
 	                    request.setAttribute("totalDailyTime", totalDailyTimeFormatted);
 
@@ -594,32 +595,26 @@ public class AttendanceServlet extends HttpServlet {
 	    private String fetchlocation(String latitude, String longitude) {
         String location = "Unknown";
 
-        if (latitude != null && longitude != null) {
-            try {
-                String urlStr = String.format(GEOCODING_API_URL, latitude, longitude);
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-
-                System.out.println("Geocoding API URL: " + urlStr);
-
-                InputStreamReader in = new InputStreamReader(conn.getInputStream());
-                JSONObject json = new JSONObject(new JSONTokener(in));
-
-                System.out.println("Geocoding API Response: " + json.toString());
-
-                JSONArray results = json.getJSONArray("results");
-                if (results.length() > 0) {
-                    JSONObject addressComponents = results.getJSONObject(0);
-                    location = addressComponents.getString("formatted_address");
-                }
-
-                System.out.println("Extracted Location: " + location);
-            } 
-            catch (Exception e) {
-                e.printStackTrace(); 
-            }
-        }
+		/*
+		 * if (latitude != null && longitude != null) { try { String urlStr =
+		 * String.format(GEOCODING_API_URL, latitude, longitude); URL url = new
+		 * URL(urlStr); HttpURLConnection conn = (HttpURLConnection)
+		 * url.openConnection(); conn.setRequestMethod("GET");
+		 * 
+		 * System.out.println("Geocoding API URL: " + urlStr);
+		 * 
+		 * InputStreamReader in = new InputStreamReader(conn.getInputStream());
+		 * JSONObject json = new JSONObject(new JSONTokener(in));
+		 * 
+		 * System.out.println("Geocoding API Response: " + json.toString());
+		 * 
+		 * JSONArray results = json.getJSONArray("results"); if (results.length() > 0) {
+		 * JSONObject addressComponents = results.getJSONObject(0); location =
+		 * addressComponents.getString("formatted_address"); }
+		 * 
+		 * System.out.println("Extracted Location: " + location); } catch (Exception e)
+		 * { e.printStackTrace(); } }
+		 */
 
         return location;
     }

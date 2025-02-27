@@ -30,7 +30,7 @@ import io.jsonwebtoken.security.Keys;
 public class LoginServlet extends HttpServlet {
 	
 	
-private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyChwWhY3MT7WGJkC6IkJSgK5vyUehcjnDY";
+//private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyChwWhY3MT7WGJkC6IkJSgK5vyUehcjnDY";
 
 //private static final String GEOCODING_API_URL="https://api-bdc.net/data/reverse-geocode?latitude=%s&longitude=%s&localityLanguage=en&key=bdc_387285a4265a47268f553510f766c48f";
 public static final Key SECRET_KEY = generateKey();
@@ -58,26 +58,19 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response) 
     response.setCharacterEncoding("UTF-8");
     JSONObject jsonResponse = new JSONObject();
 
-   if (latitude != null && longitude != null) {
-        try {
-            String urlStr = String.format(GEOCODING_API_URL, latitude, longitude);
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            InputStreamReader in = new InputStreamReader(conn.getInputStream());
-            JSONObject json = new JSONObject(new JSONTokener(in));
-            JSONArray results = json.getJSONArray("results");
-            if (results.length() > 0) {
-                JSONObject addressComponents = results.getJSONObject(0);
-                location = addressComponents.getString("formatted_address");
-            }
-        } 
-        catch (Exception e) 
-        {
-            e.printStackTrace();       
-        }
-    }
+	/*
+	 * if (latitude != null && longitude != null) { try { String urlStr =
+	 * String.format(GEOCODING_API_URL, latitude, longitude); URL url = new
+	 * URL(urlStr); HttpURLConnection conn = (HttpURLConnection)
+	 * url.openConnection(); conn.setRequestMethod("GET");
+	 * 
+	 * InputStreamReader in = new InputStreamReader(conn.getInputStream());
+	 * JSONObject json = new JSONObject(new JSONTokener(in)); JSONArray results =
+	 * json.getJSONArray("results"); if (results.length() > 0) { JSONObject
+	 * addressComponents = results.getJSONObject(0); location =
+	 * addressComponents.getString("formatted_address"); } } catch (Exception e) {
+	 * e.printStackTrace(); } }
+	 */
     
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");

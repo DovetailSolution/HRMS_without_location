@@ -75,17 +75,19 @@ public class SalesTask extends HttpServlet {
         HttpSession session = request.getSession();
 
         try {
-            if ("meetingin".equals(action)) {
+            if ("meetingin".equals(action)) 
+            {
                 String meetingInTime = LocalTime.now().toString();
+                
                 session.setAttribute("meetingIn", meetingInTime);
                 session.setAttribute("companyname", companyName);
                 session.setAttribute("companyaddress", companyAddress);
                 session.setAttribute("clientname", clientName);
                 
-                
                 session.setAttribute("meetingStarted", true); // Enable form visibility
             } 
-            else if ("meetingout".equals(action)) {
+            else if ("meetingout".equals(action)) 
+            {
                 String meetingOutTime = LocalTime.now().toString();
                 session.setAttribute("meetingOut", meetingOutTime);
                 session.removeAttribute("meetingStarted"); // Reset after form submission

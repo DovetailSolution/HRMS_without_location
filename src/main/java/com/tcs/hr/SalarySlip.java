@@ -72,9 +72,11 @@ public class SalarySlip extends HttpServlet {
                     records.add(record);
                 }
 
-                if (download != null && download.equals("pdf")) {
+                if (download != null && download.equals("pdf")) 
+                {
                     generatePdf(response, records);
-                } else {
+                } 
+                else {
                     request.setAttribute("records", records);
                     request.getRequestDispatcher("salarySlip.jsp").forward(request, response);
                 }
