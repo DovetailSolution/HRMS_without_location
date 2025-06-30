@@ -1,7 +1,6 @@
-package com.tcs.hr;
+							package com.tcs.hr;
 
 import java.io.File;
-
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -179,7 +178,7 @@ public class HRServlet extends HttpServlet {
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
-    	String leaveId = request.getParameter("leaveId");  				// For leave requests
+    	String leaveId = request.getParameter("leaveId");  // For leave requests
         String leavePaymentType = request.getParameter("leavePaymentType");
         String decision = request.getParameter("decision");
 

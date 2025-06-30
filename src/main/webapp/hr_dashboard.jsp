@@ -363,10 +363,6 @@
         </form>
         <a href="relieving_letter_template.jsp" class="button button-secondary">Relieving Letter</a>
     	<a href="joining_letter_template.jsp" class="button button-secondary">Joining Letter</a>
-    	<a href="notice.jsp" class="button button-secondary">Notice</a>
-    	<form action="salary" method="get" style="display:inline;">
-            <button type="submit" class="button">View details</button>
-        </form>
     </div>
 </body>
 </html>

@@ -10,6 +10,7 @@
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
   
+  
   <dependencies>
     <!-- Dependency 1: JSON library -->
     <dependency>
@@ -38,23 +39,6 @@
         <version>4.0.1</version>
         <scope>provided</scope>
     </dependency>
-    
-    <dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt-api</artifactId>
-    <version>0.11.5</version>
-</dependency>
-<dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt-impl</artifactId>
-    <version>0.11.5</version>
-</dependency>
-<dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt-jackson</artifactId>
-    <version>0.11.5</version>
-</dependency>
-
     
     <dependency>
         <groupId>javax.mail</groupId>
@@ -88,7 +72,7 @@
     	<version>0.12.6</version>
 	</dependency>
 	
-<!--<dependency>
+<dependency>
 	<groupId>io.jsonwebtoken</groupId>
 	<artifactId>jjwt-api</artifactId>
 	<version>0.12.6</version>
@@ -98,7 +82,7 @@
 	<groupId>io.jsonwebtoken</groupId>
 	<artifactId>jjwt-impl</artifactId>
 	<version>0.12.6</version>
-</dependency> -->
+</dependency>
 
 	<dependency>
     <groupId>com.itextpdf</groupId>
@@ -133,4 +117,7 @@
     </plugins> 						<!-- This line was missing -->
     </pluginManagement>
   </build>
+  <!--  <modules>
+  	<module>Editor</module>
+  </modules> -->
 </project>

@@ -71,11 +71,7 @@
             if (tasks == null || tasks.isEmpty()) {
         %>
             <p class="no-tasks">No tasks assigned to you.</p>
-        <% 
-        }
-            else 
-            {
-            	%>
+        <% } else { %>
             <table>
                 <thead>
                     <tr>
@@ -115,16 +111,17 @@
                                 </form>
                             </td>
                             <td>
-	    <% 
-	        String attachmentPath = (String) task.get("attachmentPath");
-	        if (attachmentPath != null && !attachmentPath.isEmpty()) { 
-	    %>
-	        <form action="downloadAttachment" method="get">
-	            <input type="hidden" name="taskId" value="<%= task.get("taskId") %>">
-	            <button type="submit">Download Attachment</button>
-	        </form>
-	    <% }  %>
-	</td>
+    <% 
+        String attachmentPath = (String) task.get("attachmentPath");
+        if (attachmentPath != null && !attachmentPath.isEmpty()) { 
+    %>
+        <form action="downloadAttachment" method="get">
+            <input type="hidden" name="taskId" value="<%= task.get("taskId") %>">
+            <button type="submit">Download Attachment</button>
+        </form>
+    <% }  %>
+</td>
+
           <td>
           <input type="file" id="attachment" name="attachment" accept=".pdf,.docx,.xlsx,.png,.jpg">
           </td>
@@ -136,15 +133,15 @@
 		        <button type="submit">Submit</button>
 			</form>		       
 		</td>
+
+                            
             </tr>
                     <%
                         }
                     %>
                 </tbody>
             </table>
-        <% 
-        } 
-        %>
+        <% } %>
     </div>
 </body>
 </html>

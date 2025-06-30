@@ -13,34 +13,6 @@
             margin: 0;
             padding: 0;
         }
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background-color: #2c3e50;
-            color: white;
-            padding: 20px 15px;
-            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-        }
-        .sidebar h2 {
-            text-align: center;
-            font-size: 24px;
-            margin-bottom: 30px;
-        }
-        .sidebar a {
-            display: block;
-            color: white;
-            text-decoration: none;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 4px;
-            text-align: center;
-        }
-        .sidebar a:hover {
-            background-color: #34495e;
-        }
         .container {
             max-width: 400px;
             margin: 50px auto;
@@ -70,27 +42,24 @@
             text-align: center;
             margin-top: 20px;
         }
-        .container a {
-		    display: block;
+        a.button-style {
 		    padding: 10px;
 		    font-size: 16px;
-		    text-align: center;
-		    background-color: #EFEFEF; /* Matches the Sign In button */
-		    color: black; /* Adjusted to black for better readability */
-		    text-decoration: none;
-		    border-radius: 5px;
 		    margin-top: 15px;
-		    width: 100%;
-		    box-sizing: border-box;
-		    border: 1px solid #000000; /* Updated border to match the button */
-    		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Added subtle shadow for outline effect */
+		    width: 95%;
+		    display: inline-block;
+		    text-align: center;
+		    background-color: #f0f0f0; 		/* Set your desired background color */
+		    color: #000000; 				/* Set the text color */
+		    text-decoration: none;
+		    border-radius: 4px; 			/* Optional: Add rounded corners */
+			border: 1px solid #ccc;
 		}
 
-
-		.container a:hover {
-		    background-color: #EFEFEF;
-}
-
+		a.button-style:hover {
+		    background-color: #f0f0f0; 	/* Optional: Add a hover effect */
+		}
+        
     </style>
     <script>
         function getLocationAndSubmit(action) {
@@ -149,7 +118,7 @@
                 <td><%= location != null ? location : "Unknown" %></td>
             </tr>
         </table>
-<!-- --------------------------------------------------------------------------------------------------- -->        
+        
         <form id="loginForm" action="attendance" method="post">
             <input type="hidden" name="latitude" id="latitude">
             <input type="hidden" name="longitude" id="longitude">
@@ -166,19 +135,19 @@
                 }
             %>
         </form>
-<!-- ---------------------------------------------------------------------------------------------------- -->
+
         <form action="attendance" method="post">
             <input type="hidden" name="action" value="viewstatus">
             <button type="submit">View Status</button>
         </form>
-<!-- ---------------------------------------------------------------------------------------------------- -->
+
         <form action="attendance" method="post">
             <input type="hidden" name="action" value="downloadReport"><br>
             <label for="yearMonth">Select Month:</label>
             <input type="month" id="yearMonth" name="yearMonth" required>
             <button type="submit">Download Monthly Report</button>
         </form>
- <!-- -------------------------------------------------------------------------------------------------- -->       
+        
         <form action="leave" method="post">
             <label for="leaveType">Select Leave Type:</label>
             <select id="leaveType" name="leaveType">
@@ -198,35 +167,26 @@
             <br><br>
             <button type="submit" name="action" value="submit">Submit Leave Request</button>
         </form>
- <!-- -------------------------------------------------------------------------------------------------- -->      
+        
         <form action="leave" method="post">
             <button type="submit" name="action" value="status">Leave Status</button>
         </form>
-<!-- --------------------------------------------------------------------------------------------------- -->     
-        <a href="salestask.jsp" class="button-style">Meeting</a>
-<!-- ----------------------------------------------------------------------------------------------------- -->		
+        
+        <a href="salestask.jsp" class="button-style">Task</a>
+		
 		<form action="task" method="post">
 			<button type="submit">Assigned by Manager</button>
 		</form>
-<!-- ---------------------------------------------------------------------------------------------------- -->		
+		
 		<form action=salarySlipRequest method="get">
     		<input type="hidden" name="action" value="requestSalarySlip">
     		<button type="submit">Request Salary Slip</button>
 		</form>
-<!-- ---------------------------------------------------------------------------------------------------- -->
 		<form action="salarySlipRequest" method="get">
 			<input type="hidden" name="action" value="slipstatus">
 			<button type="submit">Salary Slip Status</button>
 		</form>
-<!-- --------------------------------------------------------------------------------------------------- -->
 		<a href="expense.jsp" class="button-style">Expense Details</a>
-<!-- ------------------------------------------------------------------------------------------------------>
-		<form action="notice" method="get">
-    		<button type="submit">Urgent Notice</button>
-    	</form>
-<!-- ---------------------------------------------------------------------------------------------------- -->
-		<a href="reminder.jsp">Set reminder</a>    
-<!--  ----------------------------------------------------------------------------------------------------->
-</div>
+    </div>
 </body>
 </html>

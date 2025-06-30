@@ -70,6 +70,7 @@ public class salarymodule extends HttpServlet {
                         System.out.println(timeDeduction);
                     }
                 }
+
        //--------------------------------------------------------------------- 
                 
                 // Fetch leave information for the employee

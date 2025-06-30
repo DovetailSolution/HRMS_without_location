@@ -70,29 +70,9 @@
             text-align: center;
             margin-top: 20px;
         }
-        .container a {
-		    display: block;
-		    padding: 10px;
-		    font-size: 16px;
-		    text-align: center;
-		    background-color: #EFEFEF; /* Matches the Sign In button */
-		    color: black; /* Adjusted to black for better readability */
-		    text-decoration: none;
-		    border-radius: 5px;
-		    margin-top: 15px;
-		    width: 100%;
-		    box-sizing: border-box;
-		    border: 1px solid #000000; /* Updated border to match the button */
-    		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Added subtle shadow for outline effect */
-		}
-
-		.container a:hover {
-		    background-color: #EFEFEF;
-}
-
     </style>
     <script>
-        	function getLocationAndSubmit(action) {
+        function getLocationAndSubmit(action) {
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     document.getElementById('latitude').value = position.coords.latitude;
@@ -105,7 +85,7 @@
             } else {
                 alert('Geolocation is not supported by this browser.');
             }
-        } 
+        }
 
         function updateTime() {
             const now = new Date();
@@ -130,10 +110,8 @@
         </div>
         <%
             Boolean signedIn = (Boolean) request.getSession().getAttribute("signedIn");
-            //java.sql.Timestamp lastSignInTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignInTime");
-            //java.sql.Timestamp lastSignOutTime=(java.sql.Timestamp) request.getSession().getAttribute("lastSignOutTime");
-            String lastSignInTime=(String) request.getSession().getAttribute("lastSignInTime");
-            String lastSignOutTime = (String) request.getSession().getAttribute("lastSignOutTime");
+            java.sql.Timestamp lastSignInTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignInTime");
+            java.sql.Timestamp lastSignOutTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignOutTime");
             String location = (String) request.getSession().getAttribute("location");
         %>
         <table>
@@ -199,9 +177,6 @@
             <label for="endDate">End Date:</label>
             <input type="date" id="endDate" name="endDate" required>
             <br><br>
-            <label for="leaveRemarks">Remarks:</label>
-            <input type="text" id="leaveRemarks" name="leaveRemarks">
-            <br><br>
             <button type="submit" name="action" value="submit">Submit Leave Request</button>
         </form>
 <!----------------------------------------------------------------------------------------------------->      
@@ -225,12 +200,7 @@
 			<button type="submit">Salary Slip Status</button>
 		</form>
 <!------------------------------------------------------------------------------------------------------->
-    	<form action="notice" method="get">
-    		<button type="submit">Urgent Notice</button>
-    	</form>
- <!-- ---------------------------------------------------------------------------------------------------->
-    	<a href="reminder.jsp">Set reminder</a>
- <!-- --------------------------------------------------------------------------------------------------- -->
+    
     </div>
 </body>
 </html>

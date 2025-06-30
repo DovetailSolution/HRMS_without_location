@@ -96,11 +96,11 @@ public class UserDashboardServlet extends HttpServlet {
                 session.setAttribute("location", location);
 
                 String token = Jwts.builder()            //to create a token 
-                    .setSubject(username)
+                    .subject(username)
                     .claim("role", role)
                     .claim("empid", empId)
-                    .setIssuedAt(new Date())
-                    .setExpiration(new Date(System.currentTimeMillis() + 86400000))  // 1 day expiration
+                    .issuedAt(new Date())
+                    .expiration(new Date(System.currentTimeMillis() + 86400000))  // 1 day expiration
                     .signWith(SECRET_KEY)  // Default algorithm (HS256)
                     .compact();
 
