@@ -1,348 +1,204 @@
 package com.tcs.hr;
 
+import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.*;
 import java.io.IOException;
-import java.security.Key;
-import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import java.util.*;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.*;
+import org.json.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+// POJO you already use in JSPs
+import com.tcs.hr.AttendanceRecord;
 
-@WebServlet(name = "leave", urlPatterns = { "/leave" })
+/**
+ * /leave servlet
+ * POST ?action=submit  → employee submits a leave request
+ * POST ?action=status  → employee views their leave requests
+ */
+@WebServlet(name = "leave", urlPatterns = "/leave")
 public class LeaveServlet extends HttpServlet {
-	
-	/*
-	 * private static final Key SECRET_KEY = generateKey();
-	 * 
-	 * private static Key generateKey() { byte[] keyBytes = new byte[32]; // 256
-	 * bits for HS256 new SecureRandom().nextBytes(keyBytes); return
-	 * Keys.hmacShaKeyFor(keyBytes); }
-	 */
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
-    	HttpSession session = request.getSession();
-    	//String role=(String) session.getAttribute("role");
-    	
-    	//Integer userId=(Integer) session.getAttribute("userId");
-    	
-    	/*if (session == null || userId == null) {
-    	    response.sendRedirect("login.jsp");
-    	    return;
-    	}*/
-        
-        String leaveType = request.getParameter("leaveType");
-        String startDateStr = request.getParameter("startDate");
-        String endDateStr = request.getParameter("endDate");
-        String action = request.getParameter("action");
-        String leaveRemarks=request.getParameter("leaveRemarks");
-        //String empid = (String) session.getAttribute("empid");
-      //String requester = (String) session.getAttribute("user");
+    /* =========================  POST DISPATCHER  ========================= */
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
 
-        boolean isApiRequest = "XMLHttpRequest".equals(request.getHeader("leave"));
-        
-        String authHeader=request.getHeader("Authorization");          //extract token from header
-        String token=null;
-        
-        if(authHeader!=null && authHeader.startsWith("Bearer "))
-        {
-        	token=authHeader.substring(7);
-        	System.out.println(token);
-        }
-        
-        if(token==null)
-        {
-        	token=(String) session.getAttribute("token");
-        }
-        
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        JSONObject jsonResponse = new JSONObject();
-
-        if (token == null || token.isEmpty()) {
-            jsonResponse.put("status", "error");
-            jsonResponse.put("message", "Missing token");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(jsonResponse.toString());
+        /* --- 1. JWT authentication from header or session --- */
+        Claims claims = JwtUtil.extractToken(req)
+                               .map(t -> JwtUtil.verify(t).getBody())
+                               .orElse(null);
+        if (claims == null) {
+            res.sendError(HttpServletResponse.SC_UNAUTHORIZED,"Missing or invalid token");
             return;
         }
-        
-        Map<String, Object> claims = claim(token);
-        	String role=(String) claims.get("role");
-        	Integer userId=(Integer) claims.get("userid");
-        	String requester=(String) claims.get("username");
-        	String empid=(String) claims.get("empId");
-        	
-        	System.out.println(userId);
-        	System.out.println(requester);
-        	System.out.println(empid);
-        	
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
 
-            if ("submit".equals(action)) {
-            	
-                if (userId == null) {
-                    jsonResponse.put("status", "error");
-                    jsonResponse.put("message", "userId is null");
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.getWriter().write(jsonResponse.toString());
-                    return;
-                }
-                
-                LocalDate startDate = LocalDate.parse(startDateStr);
-                LocalDate endDate = LocalDate.parse(endDateStr);
-                
-                System.out.println(startDate);
-                
-                // Calculate days taken
-                int daysTaken = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
-                
-                PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO leave_requests (user_id, empId, leave_type, start_date, end_date, leave_remarks, requester, status, days_taken) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)"
-                );
-                ps.setInt(1, userId);
-                ps.setString(2, empid);
-                ps.setString(3, leaveType);
-                ps.setDate(4, java.sql.Date.valueOf(startDate));
-                ps.setDate(5, java.sql.Date.valueOf(endDate));
-                ps.setString(6, leaveRemarks);
-                ps.setString(7, requester);
-                ps.setInt(8, daysTaken);
-                
-                int rowsAffected = ps.executeUpdate();
-                if (rowsAffected > 0) {
-                	
-                	System.out.println("inserted");
-                    if (isApiRequest) {
-                        jsonResponse.put("status", "success");
-                        jsonResponse.put("message", "Leave request submitted successfully");
-                        jsonResponse.put("userid", userId);
-                        jsonResponse.put("empid", empid);
-                        jsonResponse.put("leaveType", leaveType);
-                        jsonResponse.put("startDate", startDateStr);
-                        jsonResponse.put("endDate", endDateStr);
-                        jsonResponse.put("Remarks", leaveRemarks);
-                        jsonResponse.put("requester", requester);
-                        jsonResponse.put("daysTaken", daysTaken);
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(jsonResponse.toString());
-                    } 
-                    else 
-                    {
-                        response.sendRedirect("dashboard.jsp?message=Leave request submitted successfully");
-                    }
-                } 
-                else 
-                {
-                    if (isApiRequest) {
-                        jsonResponse.put("status", "error");
-                        jsonResponse.put("message", "Failed to submit leave request");
-                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                        response.getWriter().flush();
-                    }
-                    else 
-                    {
-                        response.sendRedirect("dashboard.jsp?error=Failed to submit leave request");
-                    }
-                }
-                con.close();
-            } 
-            else if ("status".equals(action)) {
-                PreparedStatement pc = con.prepareStatement(
-                    "SELECT u.empId, lr.user_id, lr.leave_type, lr.start_date, lr.end_date, lr.requester, lr.status, lr.leave_payment_type, lr.days_taken " +
-                    "FROM users u JOIN leave_requests lr ON u.empId = lr.empId WHERE u.empId = ?"
-                );
-                pc.setString(1, empid);
-                ResultSet rs = pc.executeQuery();
+        String empId   = claims.get("empid",  String.class);
+        Integer userId = claims.get("userid", Integer.class);
+        String user    = claims.getSubject();
 
-                List<AttendanceRecord> leaveRequests = new ArrayList<>();    //to declare an array list 
-                while (rs.next()) 
-                {
-                    AttendanceRecord leaveRequest = new AttendanceRecord();
-                    leaveRequest.setEmpId(rs.getString("empId"));
-                    leaveRequest.setUserid(rs.getInt("user_id"));
-                    leaveRequest.setLeaveType(rs.getString("leave_type"));
-                    leaveRequest.setStartdate(rs.getDate("start_date"));
-                    leaveRequest.setEnddate(rs.getDate("end_date"));
-                    leaveRequest.setRequester(rs.getString("requester"));
-                    leaveRequest.setStatus(rs.getString("status"));
-                    leaveRequest.setLeavePaymentType(rs.getString("leave_payment_type"));
-                    leaveRequest.setDaysTaken(rs.getInt("days_taken"));
-                    leaveRequests.add(leaveRequest);
-                }
-                
-                if (isApiRequest) {
-                    JSONArray jsonLeaveArray = new JSONArray();
-                    
-                    for (AttendanceRecord record : leaveRequests) 
-                    {
-                        JSONObject arrayResponse = new JSONObject();
-                        arrayResponse.put("empId", record.getEmpId());
-                        arrayResponse.put("userId", record.getUserid());
-                        arrayResponse.put("leaveType", record.getLeaveType());
-                        arrayResponse.put("startDate", record.getStartdate().toString());
-                        arrayResponse.put("endDate", record.getEnddate().toString());
-                        arrayResponse.put("requester", record.getRequester());
-                        arrayResponse.put("status", record.getStatus());
-                        arrayResponse.put("leavePaymentType", record.getLeavePaymentType());
-                        arrayResponse.put("daysTaken", record.getDaysTaken());
-                        jsonLeaveArray.put(arrayResponse);
-                    }
-                    
-                    // Wrap the array inside a response object
-                    //JSONObject jsonResponse1 = new JSONObject();
-                    jsonResponse.put("status", "success");
-                    jsonResponse.put("leaveRequests", jsonLeaveArray);
-                    
-                    response.setContentType("application/json");
-                    response.setCharacterEncoding("UTF-8");
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(jsonResponse.toString());
-                }
+        String action  = req.getParameter("action");
+        boolean isApi  = "XMLHttpRequest".equals(req.getHeader("X-Requested-With"));
+        JSONObject json = new JSONObject();
 
-                	else {
-                    request.setAttribute("leaveRequests", leaveRequests);
-                    request.getRequestDispatcher("leavestatus.jsp").forward(request, response);
-                }
-            }
-            con.close();
-        } 
-        
-        catch (Exception e) {
-            e.printStackTrace();
-            jsonResponse.put("status", "error");
-            jsonResponse.put("message", "An error occurred: " + e.getMessage());
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write(jsonResponse.toString());
+        switch (action) {
+            case "submit":
+                submitLeave(req, res, isApi, json, empId, userId, user);
+                break;
+            case "status":
+                statusLeave(req, res, isApi, json, empId);
+                break;
+            default:
+                res.sendError(HttpServletResponse.SC_BAD_REQUEST,"Unknown action");
         }
     }
 
-    /*protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        
-    	HttpSession session = request.getSession();
-        //String role = (String) session.getAttribute("role");
-    	
-    	String authHeader=request.getHeader("Authorization");
-    	String token=null;
-    	
-    	if(authHeader!=null && authHeader.startsWith("Bearer "))
-    	{
-    		token=authHeader.substring(7);
-    	}
-    	
-    	if(token==null)
-    	{
-    		token=(String) session.getAttribute("token");
-    	}
-    	
-    	Map<String, Object> claims=claim(token);
-    	String role=(String) claims.get("role");
-    	
-    	
-        if (!"hr".equals(role)) {
-            response.sendRedirect("login.jsp");
+    /* =========================  ACTION HANDLERS  ========================= */
+
+    /** ---------- submit new leave request ---------- */
+    private void submitLeave(HttpServletRequest req, HttpServletResponse res,
+                             boolean isApi, JSONObject json,
+                             String empId, Integer userId, String requester) throws IOException {
+
+        String leaveType    = req.getParameter("leaveType");
+        String startStr     = req.getParameter("startDate");
+        String endStr       = req.getParameter("endDate");
+        String remarks      = req.getParameter("leaveRemarks");
+
+        if (userId == null || leaveType == null || startStr == null || endStr == null) {
+            errorJson(isApi, res, json, "Missing parameters", HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
 
-        String leaveId = request.getParameter("leaveId");
-        String decision = request.getParameter("decision");
-        boolean isApiRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        LocalDate start = LocalDate.parse(startStr);
+        LocalDate end   = LocalDate.parse(endStr);
+        int daysTaken   = (int) ChronoUnit.DAYS.between(start, end) + 1;
 
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        JSONObject jsonResponse = new JSONObject();
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                "INSERT INTO leave_requests " +
+                "(user_id, empId, leave_type, start_date, end_date, leave_remarks, requester, status, days_taken) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)")) {
 
-        if (isApiRequest) {
-            jsonResponse.put("status", "error");
-            jsonResponse.put("message", "Invalid or missing token");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write(jsonResponse.toString());
-            return;
-        }
+            ps.setInt   (1, userId);
+            ps.setString(2, empId);
+            ps.setString(3, leaveType);
+            ps.setDate  (4, java.sql.Date.valueOf(start));
+            ps.setDate  (5, java.sql.Date.valueOf(end));
+            ps.setString(6, remarks);
+            ps.setString(7, requester);
+            ps.setInt   (8, daysTaken);
 
-        if (leaveId != null && decision != null) {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
-
-                PreparedStatement ps = con.prepareStatement("UPDATE leave_requests SET status = ? WHERE id = ?");
-                ps.setString(1, decision);
-                ps.setInt(2, Integer.parseInt(leaveId));
-
-                int rowsAffected = ps.executeUpdate();
-                if (rowsAffected > 0) {
-                    if (isApiRequest) {
-                        jsonResponse.put("status", "success");
-                        jsonResponse.put("message", "Leave request " + decision.toLowerCase() + " successfully");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        response.getWriter().write(jsonResponse.toString());
-                    } else {
-                        response.sendRedirect("hr?message=Leave request " + decision.toLowerCase() + " successfully");
-                    }
+            if (ps.executeUpdate() > 0) {
+                if (isApi) {
+                    json.put("status","success")
+                        .put("message","Leave request submitted")
+                        .put("leaveType", leaveType)
+                        .put("startDate", startStr)
+                        .put("endDate",   endStr)
+                        .put("daysTaken", daysTaken);
+                    sendJson(res, HttpServletResponse.SC_OK, json);
                 } else {
-                    if (isApiRequest) {
-                        jsonResponse.put("status", "error");
-                        jsonResponse.put("message", "Failed to process leave request");
-                        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                        response.getWriter().write(jsonResponse.toString());
-                    } else {
-                        response.sendRedirect("hr?error=Failed to process leave request");
-                    }
+                    res.sendRedirect("dashboard.jsp?message=Leave+request+submitted");
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
-                jsonResponse.put("status", "error");
-                jsonResponse.put("message", "An error occurred: " + e.getMessage());
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write(jsonResponse.toString());
+            } else {
+                errorJson(isApi,res,json,"Insert failed");
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            errorJson(isApi,res,json,"DB error");
         }
-}*/
-//------------------------------------------------------------------------------------------------------    	
-    private Map<String, Object> claim(String token) {
-        Claims claims = Jwts.parser()
-                .setSigningKey(LoginServlet.SECRET_KEY) // Use the shared SECRET_KEY
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
+    }
 
-        String username = claims.getSubject(); // Extract the "sub" claim
-        String empId = claims.get("empid", String.class); // Extract the "empId" claim
-        String role = claims.get("role", String.class);
-        
-        // Handling userid properly
-        Integer userid = null;
-        if (claims.get("userid") != null) {
-            userid = ((Number) claims.get("userid")).intValue();
+    /** ---------- view leave status ---------- */
+    private void statusLeave(HttpServletRequest req, HttpServletResponse res,
+                             boolean isApi, JSONObject json,
+                             String empId) throws IOException, ServletException {
+
+        try (Connection con = getConnection();
+             PreparedStatement ps = con.prepareStatement(
+                "SELECT user_id, leave_type, start_date, end_date, requester, " +
+                "status, leave_payment_type, days_taken " +
+                "FROM leave_requests WHERE empId = ?")) {
+
+            ps.setString(1, empId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+
+                JSONArray apiArray            = new JSONArray();       // for API
+                List<AttendanceRecord> jspList = new ArrayList<>();    // for JSP
+
+                while (rs.next()) {
+                    /* Build JSON object */
+                    JSONObject row = new JSONObject()
+                        .put("userId",           rs.getInt("user_id"))
+                        .put("leaveType",        rs.getString("leave_type"))
+                        .put("startDate",        rs.getDate("start_date").toString())
+                        .put("endDate",          rs.getDate("end_date").toString())
+                        .put("requester",        rs.getString("requester"))
+                        .put("status",           rs.getString("status"))
+                        .put("leavePaymentType", rs.getString("leave_payment_type"))
+                        .put("daysTaken",        rs.getInt("days_taken"));
+                    apiArray.put(row);
+
+                    /* Build bean for JSP */
+                    AttendanceRecord rec = new AttendanceRecord();
+                    rec.setUserid(rs.getInt("user_id"));
+                    rec.setLeaveType(rs.getString("leave_type"));
+                    rec.setStartdate(rs.getDate("start_date"));
+                    rec.setEnddate(rs.getDate("end_date"));
+                    rec.setRequester(rs.getString("requester"));
+                    rec.setStatus(rs.getString("status"));
+                    rec.setLeavePaymentType(rs.getString("leave_payment_type"));
+                    rec.setDaysTaken(rs.getInt("days_taken"));
+                    jspList.add(rec);
+                }
+
+                if (isApi) {
+                    json.put("status","success").put("leaveRequests", apiArray);
+                    sendJson(res, HttpServletResponse.SC_OK, json);
+                } else {
+                    req.setAttribute("leaveRequests", jspList);
+                    req.getRequestDispatcher("leavestatus.jsp").forward(req, res);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            errorJson(isApi,res,json,"DB error retrieving status");
         }
+    }
 
-        Map<String, Object> claimMap = new HashMap<>();
-        claimMap.put("username", username);
-        claimMap.put("empId", empId);
-        claimMap.put("role", role);
-        claimMap.put("userid", userid); // Now it's allowed
+    /* ===============================  HELPERS  =============================== */
 
-        return claimMap;
+    private Connection getConnection() throws SQLException, ClassNotFoundException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        return DriverManager.getConnection(
+            "jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
+    }
+
+    private void sendJson(HttpServletResponse res, int status, JSONObject obj) throws IOException {
+        res.setStatus(status);
+        res.setContentType("application/json");
+        res.setCharacterEncoding("UTF-8");
+        res.getWriter().write(obj.toString());
+    }
+
+    private void errorJson(boolean api, HttpServletResponse res,
+                           JSONObject json, String msg) throws IOException {
+        errorJson(api, res, json, msg, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+    }
+
+    private void errorJson(boolean api, HttpServletResponse res,
+                           JSONObject json, String msg, int code) throws IOException {
+        if (api) {
+            json.put("status","error").put("message", msg);
+            sendJson(res, code, json);
+        } else {
+            res.sendError(code, msg);
+        }
     }
 }

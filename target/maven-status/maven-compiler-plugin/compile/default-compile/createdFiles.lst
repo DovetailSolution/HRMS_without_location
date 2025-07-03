@@ -19,13 +19,13 @@ com\tcs\hr\Family.class
 com\tcs\hr\updateTaskStatus.class
 com\tcs\hr\DownloadServlet.class
 com\tcs\hr\Quotation.class
-com\tcs\hr\UserDashboardServlet.class
 com\tcs\hr\AttendanceRecord.class
 com\tcs\hr\LeaveServlet.class
 com\tcs\hr\RegisterServlet.class
 com\tcs\hr\LocationApi.class
 com\tcs\hr\updateEmployee.class
 com\tcs\hr\HRServlet.class
+com\tcs\hr\JwtUtil.class
 com\tcs\hr\AccDashboard.class
 com\tcs\hr\Admin.class
 com\tcs\hr\SalesTaskEdit.class

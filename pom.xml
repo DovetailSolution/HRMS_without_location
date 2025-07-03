@@ -40,37 +40,36 @@
       <version>1.4.7</version>
     </dependency>
 
-    <!-- JJWT 0.12.6 — single shaded JAR (simplest) -->
-    <dependency>
-      <groupId>io.jsonwebtoken</groupId>
-      <artifactId>jjwt</artifactId>
-      <version>0.12.6</version>
-    </dependency>
-    
-    <dependency>
+<!--    <dependency>
     <groupId>io.jsonwebtoken</groupId>
     <artifactId>jjwt-api</artifactId>
-    <version>0.12.5</version>
+    <version>0.12.6</version>
 </dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-impl</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>io.jsonwebtoken</groupId>
+    <artifactId>jjwt-jackson</artifactId>
+    <version>0.12.6</version>
+    <scope>runtime</scope>
+</dependency>-->
 
 <dependency>
     <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt-jackson</artifactId>  <!-- JSON codec -->
-    <version>0.12.5</version>
-    <scope>runtime</scope>
+    <artifactId>jjwt</artifactId>
+    <version>0.9.1</version>
 </dependency>
 
+
+    
 <dependency>
     <groupId>com.fasterxml.jackson.core</groupId>
     <artifactId>jackson-databind</artifactId>
     <version>2.17.1</version>
-</dependency>
-
-<dependency>
-    <groupId>io.jsonwebtoken</groupId>
-    <artifactId>jjwt-impl</artifactId>
-    <version>0.12.5</version>
-    <scope>runtime</scope>   <!-- keep it in the WAR -->
 </dependency>
 
     <!-- HTTP Client -->
@@ -93,6 +92,19 @@
       <artifactId>itextpdf</artifactId>
       <version>5.5.13.4</version>
     </dependency>
+    
+    <dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.1</version> <!-- Or 2.3.3 -->
+</dependency>
+
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.3.1</version>
+</dependency>
+
 
   </dependencies>
 
