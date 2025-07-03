@@ -1,38 +1,38 @@
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalesDashboard.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/updateTaskStatus.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalarySlip.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/AttendanceServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/RegisterServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ExpenseStatus.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/DownloadServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/Admin.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/JoiningLetter.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/UserDashboardServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/updateLeave.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/onboarding.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalesTask.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalesManager.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalesTaskEdit.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/LoginServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/QuotationRecord.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ManagerServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/TaskServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ReportServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/LocationApi.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/updateEmployee.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/Quotation.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ExpenseRecord.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/Resignation.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalarySlipRequestServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/AccDashboard.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/Family.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/RelievingLetter.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ExpenseDetails.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/salarymodule.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/UpdateSalary.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ReportGenerator.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/HRServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/LeaveServlet.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/SalesAttendance.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/AttendanceRecord.java
-/home/ubuntu/Old_hrms/AttendanceManagementSystem/src/main/java/com/tcs/hr/ExpensesServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\LocationApi.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\RegisterServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ExpenseRecord.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ExpensesServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ExpenseDetails.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\Resignation.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\onboarding.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\HRServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\updateLeave.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\JoiningLetter.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\DownloadServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\AccDashboard.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\updateEmployee.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\UserDashboardServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\LoginServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalesManager.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\UpdateSalary.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\RelievingLetter.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\AttendanceServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalesAttendance.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\QuotationRecord.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalarySlipRequestServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ReportGenerator.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalesTaskEdit.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\AttendanceRecord.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\Quotation.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\salarymodule.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalesTask.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ReportServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\updateTaskStatus.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalarySlip.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\SalesDashboard.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\Family.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\Admin.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ManagerServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\ExpenseStatus.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\LeaveServlet.java
+D:\HRMS Without location\src\main\java\com\tcs\hr\TaskServlet.java

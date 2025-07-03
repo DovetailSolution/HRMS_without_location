@@ -110,8 +110,10 @@
         </div>
         <%
             Boolean signedIn = (Boolean) request.getSession().getAttribute("signedIn");
-            java.sql.Timestamp lastSignInTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignInTime");
-            java.sql.Timestamp lastSignOutTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignOutTime");
+            //java.sql.Timestamp lastSignInTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignInTime");
+            //java.sql.Timestamp lastSignOutTime = (java.sql.Timestamp) request.getSession().getAttribute("lastSignOutTime");
+            String lastSignInTime=(String) request.getSession().getAttribute("lastSignInTime");
+            String lastSignOutTime = (String) request.getSession().getAttribute("lastSignOutTime");
             String location = (String) request.getSession().getAttribute("location");
         %>
         <table>
