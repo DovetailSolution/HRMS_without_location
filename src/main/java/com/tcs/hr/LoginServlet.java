@@ -1,185 +1,220 @@
 package com.tcs.hr;
 
-import java.io.IOException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.Key;
-import java.security.SecureRandom;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Date;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.Key;
+import java.security.SecureRandom;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Base64;
+import java.util.Date;
+
+/**
+ * Handles user login and issues a JWT that the client must send back in the
+ * <code>Authorization: Bearer &lt;token&gt;</code> header for every protected
+ * request. <p> The signing key is loaded from the {@code JWT_SECRET}
+ * environment variable. If that variable is absent, the servlet generates a
+ * random 256‑bit key on first start‑up and persists it in a file named
+ * <code>jwt-secret.key</code> inside the Tomcat base directory so that all
+ * subsequent redeploys use the exact same key.</p>
+ */
 @WebServlet(name = "login", urlPatterns = { "/login" })
 public class LoginServlet extends HttpServlet {
-	
-	
-private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyAupWVhWnazaOJp85AYnCHxIMOzmmFg_D4";
-public static final Key SECRET_KEY = generateKey();
 
-private static Key generateKey() {
-    byte[] keyBytes = new byte[32]; 			// 256 bits for HS256
-    new SecureRandom().nextBytes(keyBytes);
-    return Keys.hmacShaKeyFor(keyBytes);
-}
+    private static final long serialVersionUID = 1L;
 
-protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    String username = request.getParameter("username");
-    String password = request.getParameter("password");
-    String latitude = request.getParameter("latitude");
-    String longitude = request.getParameter("longitude");
-    String location = "Unknown Location";    
+    private static final String GEOCODING_API_URL =
+            "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyAupWVhWnazaOJp85AYnCHxIMOzmmFg_D4";
 
-    boolean isApiRequest = "XMLHttpRequest".equals(request.getHeader("login"));
+    /* ---------------------------------------------------------------------
+     *  JWT key handling
+     * ------------------------------------------------------------------- */
+    public static final Key SECRET_KEY = loadOrCreateKey();
 
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    JSONObject jsonResponse = new JSONObject();
+    private static Key loadOrCreateKey() {
 
-    if (latitude != null && longitude != null) {
+    	String env = System.getenv("JWT_SECRET");
+        if (env != null && !env.trim().isEmpty()) {
+            return Keys.hmacShaKeyFor(Decoders.BASE64.decode(env.trim()));
+        }
+
+        /* 2️⃣ Try file inside $CATALINA_BASE */
+        Path keyFile = Paths.get(System.getProperty("catalina.base", "."), "jwt-secret.key");
         try {
-            String urlStr = String.format(GEOCODING_API_URL, latitude, longitude);
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-
-            InputStreamReader in = new InputStreamReader(conn.getInputStream());
-            JSONObject json = new JSONObject(new JSONTokener(in));
-            JSONArray results = json.getJSONArray("results");
-            if (results.length() > 0) {
-                JSONObject addressComponents = results.getJSONObject(0);
-                location = addressComponents.getString("formatted_address");
+            if (Files.exists(keyFile)) {
+                String stored = Files.readString(keyFile, StandardCharsets.UTF_8).trim();
+                return Keys.hmacShaKeyFor(Decoders.BASE64.decode(stored));
             }
         } 
-        catch (Exception e) 
-        {
-            e.printStackTrace();
+        catch (IOException ignored) {
+            // fall through to generate a new key
         }
+
+        /* 3️⃣ Generate and persist a new key */
+        byte[] random = new byte[32]; 
+        new SecureRandom().nextBytes(random);
+        String base64 = Base64.getEncoder().encodeToString(random);
+        try {
+            Files.writeString(keyFile, base64, StandardCharsets.UTF_8);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Unable to save generated JWT key to " + keyFile, ex);
+        }
+        return Keys.hmacShaKeyFor(random);
     }
 
-    try {
-        Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
+    /* --------------------------------------------------------------------- */
 
-        PreparedStatement ps = con.prepareStatement("SELECT id, empId, role FROM users WHERE username=? AND password=?");
-        ps.setString(1, username);
-        ps.setString(2, password);
-        ResultSet rs = ps.executeQuery();
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-        if (rs.next()) {
-            int userId = rs.getInt("id");
-            String empId = rs.getString("empId");
-            String role = rs.getString("role");
+        String username  = request.getParameter("username");
+        String password  = request.getParameter("password");
+        String latitude  = request.getParameter("latitude");
+        String longitude = request.getParameter("longitude");
 
-            HttpSession session = request.getSession();
-            session.setAttribute("user", username);
-            session.setAttribute("role", role);
-            session.setAttribute("empid", empId);
-            session.setAttribute("latitude", latitude); 
-            session.setAttribute("longitude", longitude);   
-            session.setAttribute("location", location);       
-            session.setAttribute("userId", userId);        
-            
-            String token = Jwts.builder()            //to create a token 
-                .subject(username)
-                .claim("role", role)
-                .claim("empid", empId)
-                .claim("userid", userId)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 86400000))  // 1 day expiration
-                .signWith(SECRET_KEY)  			// Default algorithm (HS256)
-                .compact();
+        boolean isApiRequest = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("login"));
 
-            session.setAttribute("token", token);   //set the token in the session
-            System.out.println(token);
-            
-            if (isApiRequest) {
-                jsonResponse.put("status", "success");
-                jsonResponse.put("message", "login successfully");
-                jsonResponse.put("user", username);
-                jsonResponse.put("role", role);
-                jsonResponse.put("empid", empId);
-                jsonResponse.put("latitude", latitude);
-                jsonResponse.put("longitude", longitude);
-                jsonResponse.put("location", location);
-                jsonResponse.put("token", token);
-                jsonResponse.put("userId", userId);   
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        JSONObject json = new JSONObject();
 
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(jsonResponse.toString());
-            }  
-            else {
-            	if ("hr".equalsIgnoreCase(role)) {
-            	    response.sendRedirect("hr");
-            	} 
-            	else if("admin".equalsIgnoreCase(role)) {
-            	    response.sendRedirect("adminpanel.jsp");
-            	} 
-            	else if("manager".equals(role))
-            	{
-            		response.sendRedirect("manager.jsp");
-            	}
-            	else if("salesperson".equals(role))
-            	{
-            		response.sendRedirect("salesdashboard.jsp");
-            	}
-            	else if("salesmanager".equals(role))
-            	{
-            		response.sendRedirect("salesmanager.jsp");
-            	}
-            	else if("accountant".equals(role))
-            	{
-            		response.sendRedirect("AccountantDashboard.jsp");
-            	}
-            	else 
-            	{
-            	    response.sendRedirect("dashboard.jsp");
-            	}
+        /* ----------------------------------------------------------------- */
+        // Optional reverse‑geocoding
+        String location = "Unknown";
+        if (latitude != null && longitude != null) {
+            try {
+                String urlStr = String.format(GEOCODING_API_URL, latitude, longitude);
+                HttpURLConnection conn = (HttpURLConnection) new URL(urlStr).openConnection();
+                conn.setRequestMethod("GET");
+
+                try (InputStreamReader in = new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8)) {
+                    JSONObject geo = new JSONObject(new JSONTokener(in));
+                    JSONArray results = geo.optJSONArray("results");
+                    if (results != null && !results.isEmpty()) {
+                        location = results.getJSONObject(0).optString("formatted_address", location);
+                    }
+                }
+            } catch (Exception e) {
+                // Fail soft — we still allow login
+                e.printStackTrace();
             }
-        } 
-        else {
+        }
+
+        /* ----------------------------------------------------------------- */
+        // Authenticate against DB
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException ex) {
+            throw new ServletException("MySQL driver missing", ex);
+        }
+
+        try (Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
+             PreparedStatement ps = con.prepareStatement(
+                     "SELECT id, empId, role FROM users WHERE username=? AND password=?")) {
+
+            ps.setString(1, username);
+            ps.setString(2, password);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    // ✅ Credentials ok
+                    int    userId = rs.getInt("id");
+                    String empId  = rs.getString("empId");
+                    String role   = rs.getString("role");
+
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute("user", username);
+                    session.setAttribute("role", role);
+                    session.setAttribute("empid", empId);
+                    session.setAttribute("latitude", latitude);
+                    session.setAttribute("longitude", longitude);
+                    session.setAttribute("location", location);
+                    session.setAttribute("userId", userId);
+
+                    // 🔑  Issue JWT, valid 24 h
+                    long now  = System.currentTimeMillis();
+                    String jwt = Jwts.builder()
+                            .setSubject(username)
+                            .claim("role", role)
+                            .claim("empid", empId)
+                            .claim("userid", userId)
+                            .setIssuedAt(new Date(now))
+                            .setExpiration(new Date(now + 24 * 60 * 60 * 1000))
+                            .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                            .compact();
+
+                    session.setAttribute("token", jwt);
+
+                    json.put("status", "success")
+                        .put("message", "Login successful")
+                        .put("user", username)
+                        .put("role", role)
+                        .put("empid", empId)
+                        .put("latitude", latitude)
+                        .put("longitude", longitude)
+                        .put("location", location)
+                        .put("token", jwt)
+                        .put("userId", userId);
+
+                    if (isApiRequest) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        response.getWriter().write(json.toString());
+                    } else {
+                        // Redirect according to role
+                        switch (role.toLowerCase()) {
+                            case "hr":          response.sendRedirect("hr"); break;
+                            case "admin":       response.sendRedirect("adminpanel.jsp"); break;
+                            case "manager":     response.sendRedirect("manager.jsp"); break;
+                            case "salesperson": response.sendRedirect("salesdashboard.jsp"); break;
+                            case "salesmanager":response.sendRedirect("salesmanager.jsp"); break;
+                            case "accountant":  response.sendRedirect("AccountantDashboard.jsp"); break;
+                            default:             response.sendRedirect("dashboard.jsp");
+                        }
+                    }
+                    return;
+                }
+            }
+
+            // ❌ Bad credentials
+            json.put("status", "error")
+                .put("message", "Invalid credentials");
             if (isApiRequest) {
-                jsonResponse.put("status", "error");
-                jsonResponse.put("message", "Invalid credentials");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write(jsonResponse.toString());
-            } 
-            else {
-                response.sendRedirect("login.jsp?error=Invalid credentials");
+                response.getWriter().write(json.toString());
+            } else {
+                response.sendRedirect("login.jsp?error=Invalid%20credentials");
             }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            json.put("status", "error")
+                .put("message", ex.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(json.toString());
         }
-    } 
-    catch (Exception e) {
-        e.printStackTrace();
-        jsonResponse.put("status", "error");
-        jsonResponse.put("message", "An error occurred: " + e.getMessage());
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write(jsonResponse.toString());
-        
     }
-}
-/*
- * public static void termination() { try {
- * Class.forName("com.mysql.cj.jdbc.Driver"); Connection
- * con=DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db",
- * "root","manager");
- * 
- * PreparedStatement ps=con.prepareStatement("")
- * 
- * } catch (Exception e) { // TODO: handle exception } }
- */
 }
