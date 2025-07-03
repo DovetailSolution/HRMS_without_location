@@ -1,102 +1,78 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
                              http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  							
   <modelVersion>4.0.0</modelVersion>
-  
-  <groupId>HRMS</groupId>
-  <artifactId>HRMS</artifactId> 
+
+  <groupId>com.tcs</groupId>
+  <artifactId>hrms</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>war</packaging>
-  
-  
+
   <dependencies>
-    <!-- Dependency 1: JSON library -->
+
+    <!-- JSON (keep ONE) -->
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
-      <version>20210307</version>
+      <version>20240303</version>
     </dependency>
-    
-    <!-- https://mvnrepository.com/artifact/org.json/json -->
-	<dependency>
-    	<groupId>org.json</groupId>
-    	<artifactId>json</artifactId>
-    	<version>20240303</version>
-	</dependency>
 
-    <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
-	<dependency>
-    	<groupId>mysql</groupId>
-    	<artifactId>mysql-connector-java</artifactId>
-    	<version>8.0.33</version>
-	</dependency>
-     
+    <!-- MySQL driver -->
     <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>4.0.1</version>
-        <scope>provided</scope>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>8.0.33</version>
     </dependency>
-    
+
+    <!-- Servlet API (provided by Tomcat) -->
     <dependency>
-        <groupId>javax.mail</groupId>
-        <artifactId>mail</artifactId>
-        <version>1.4.7</version>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>4.0.1</version>
+      <scope>provided</scope>
     </dependency>
-    
-    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-	<dependency>
-    	<groupId>com.fasterxml.jackson.core</groupId>
-    	<artifactId>jackson-databind</artifactId>
-    	<version>2.17.1</version>
-	</dependency>
 
-	<dependency>
-    	<groupId>org.apache.httpcomponents</groupId>
-    	<artifactId>httpclient</artifactId>
-    	<version>4.5.13</version>
-	</dependency>
-	
-	<!-- https://mvnrepository.com/artifact/com.ngrok/ngrok-api-java -->
-<dependency>
-			<groupId>com.ngrok</groupId>
-			<artifactId>ngrok-java</artifactId>
-			<version>0.5.0</version>
-		</dependency>
-		
-	<dependency>
-    	<groupId>io.jsonwebtoken</groupId>
-    	<artifactId>jjwt</artifactId>
-    	<version>0.12.6</version>
-	</dependency>
-	
-<dependency>
-	<groupId>io.jsonwebtoken</groupId>
-	<artifactId>jjwt-api</artifactId>
-	<version>0.12.6</version>
-</dependency>
+    <!-- JavaMail -->
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>1.4.7</version>
+    </dependency>
 
-<dependency>
-	<groupId>io.jsonwebtoken</groupId>
-	<artifactId>jjwt-impl</artifactId>
-	<version>0.12.6</version>
-</dependency>
+    <!-- JJWT 0.12.6 — single shaded JAR (simplest) -->
+    <dependency>
+      <groupId>io.jsonwebtoken</groupId>
+      <artifactId>jjwt</artifactId>
+      <version>0.12.6</version>
+    </dependency>
 
-	<dependency>
-    <groupId>com.itextpdf</groupId>
-    <artifactId>itextpdf</artifactId>
-    <version>5.5.13.4</version>
-</dependency>
-    
-    <!-- Add more dependencies here if needed -->
+    <!-- HTTP Client -->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.13</version>
+    </dependency>
+
+    <!-- Ngrok -->
+    <dependency>
+      <groupId>com.ngrok</groupId>
+      <artifactId>ngrok-java</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+
+    <!-- iText PDF -->
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>itextpdf</artifactId>
+      <version>5.5.13.4</version>
+    </dependency>
+
   </dependencies>
-  
+
   <build>
-	<pluginManagement>
     <plugins>
-      <!-- Compiler plugin configuration -->
+      <!-- Compiler -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -106,18 +82,13 @@
           <target>1.8</target>
         </configuration>
       </plugin>
-      
-      <!-- WAR plugin configuration -->
+
+      <!-- WAR -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.3.1</version>
-        <!-- Additional configuration for the WAR plugin if needed -->
       </plugin>
-    </plugins> 						<!-- This line was missing -->
-    </pluginManagement>
+    </plugins>
   </build>
-  <!--  <modules>
-  	<module>Editor</module>
-  </modules> -->
 </project>

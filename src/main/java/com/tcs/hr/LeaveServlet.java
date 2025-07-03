@@ -1,6 +1,8 @@
 package com.tcs.hr;
 
 import java.io.IOException;
+import java.security.Key;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -15,72 +17,91 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "leave", urlPatterns = { "/leave" })
 public class LeaveServlet extends HttpServlet {
+	
+	/*
+	 * private static final Key SECRET_KEY = generateKey();
+	 * 
+	 * private static Key generateKey() { byte[] keyBytes = new byte[32]; // 256
+	 * bits for HS256 new SecureRandom().nextBytes(keyBytes); return
+	 * Keys.hmacShaKeyFor(keyBytes); }
+	 */
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         
     	HttpSession session = request.getSession();
     	//String role=(String) session.getAttribute("role");
     	
-        /*if (session == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }*/
+    	//Integer userId=(Integer) session.getAttribute("userId");
+    	
+    	/*if (session == null || userId == null) {
+    	    response.sendRedirect("login.jsp");
+    	    return;
+    	}*/
         
         String leaveType = request.getParameter("leaveType");
         String startDateStr = request.getParameter("startDate");
         String endDateStr = request.getParameter("endDate");
-        String requester = (String) session.getAttribute("user");
         String action = request.getParameter("action");
-	String leaveRemarks=request.getParameter("leaveRemarks");
+        String leaveRemarks=request.getParameter("leaveRemarks");
         //String empid = (String) session.getAttribute("empid");
-        //Integer userId = (Integer) session.getAttribute("userId");
+      //String requester = (String) session.getAttribute("user");
 
-        boolean isApiRequest = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
-	
-	String authHeader=request.getHeader("Authorization");
-	String token=null;
-
-	if(authHeader!=null && authHeader.startswith("Bearer "))
-	{
-		token=authHeader.substring(7);
-	}
-
-	if(token==null)
-	{
-		token=(String) session.getAttribute("token");
-	}
-	
-	        response.setContentType("application/json");
+        boolean isApiRequest = "XMLHttpRequest".equals(request.getHeader("leave"));
+        
+        String authHeader=request.getHeader("Authorization");          //extract token from header
+        String token=null;
+        
+        if(authHeader!=null && authHeader.startsWith("Bearer "))
+        {
+        	token=authHeader.substring(7);
+        	System.out.println(token);
+        }
+        
+        if(token==null)
+        {
+        	token=(String) session.getAttribute("token");
+        }
+        
+        response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         JSONObject jsonResponse = new JSONObject();
 
-
-	if(token==null || token.isEmpty())
-	{
-		jsonResponse.put("status","error");
-		jsonResponse.put("message","Missing token");
-		response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-		reponse.getWriter().write(jsonResponse.toString());
-		return;
-	}
-
-	Map<String, Object> claims=claim(token);
-	String role=(String) claims.get("role");
-	Integer userId=(Integer) claims.get("userid");
-	String requester=(String) claims.get("username");
-	String empid=(String) claims.get("empId");
-
-
+        if (token == null || token.isEmpty()) {
+            jsonResponse.put("status", "error");
+            jsonResponse.put("message", "Missing token");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(jsonResponse.toString());
+            return;
+        }
+        
+        Map<String, Object> claims = claim(token);
+        	String role=(String) claims.get("role");
+        	Integer userId=(Integer) claims.get("userid");
+        	String requester=(String) claims.get("username");
+        	String empid=(String) claims.get("empId");
+        	
+        	System.out.println(userId);
+        	System.out.println(requester);
+        	System.out.println(empid);
+        	
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-          Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/attendance_db", "root", "manager");
 
             if ("submit".equals(action)) {
+            	
                 if (userId == null) {
                     jsonResponse.put("status", "error");
                     jsonResponse.put("message", "userId is null");
@@ -98,18 +119,21 @@ public class LeaveServlet extends HttpServlet {
                 int daysTaken = (int) ChronoUnit.DAYS.between(startDate, endDate) + 1;
                 
                 PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO leave_requests (user_id, empId, leave_type, start_date, end_date, requester, status, days_taken) VALUES (?, ?, ?, ?, ?, ?, 'Pending', ?)"
+                    "INSERT INTO leave_requests (user_id, empId, leave_type, start_date, end_date, leave_remarks, requester, status, days_taken) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', ?)"
                 );
                 ps.setInt(1, userId);
                 ps.setString(2, empid);
                 ps.setString(3, leaveType);
                 ps.setDate(4, java.sql.Date.valueOf(startDate));
                 ps.setDate(5, java.sql.Date.valueOf(endDate));
-                ps.setString(6, requester);
-                ps.setInt(7, daysTaken);
+                ps.setString(6, leaveRemarks);
+                ps.setString(7, requester);
+                ps.setInt(8, daysTaken);
                 
                 int rowsAffected = ps.executeUpdate();
                 if (rowsAffected > 0) {
+                	
+                	System.out.println("inserted");
                     if (isApiRequest) {
                         jsonResponse.put("status", "success");
                         jsonResponse.put("message", "Leave request submitted successfully");
@@ -118,6 +142,7 @@ public class LeaveServlet extends HttpServlet {
                         jsonResponse.put("leaveType", leaveType);
                         jsonResponse.put("startDate", startDateStr);
                         jsonResponse.put("endDate", endDateStr);
+                        jsonResponse.put("Remarks", leaveRemarks);
                         jsonResponse.put("requester", requester);
                         jsonResponse.put("daysTaken", daysTaken);
                         response.setStatus(HttpServletResponse.SC_OK);
@@ -151,8 +176,9 @@ public class LeaveServlet extends HttpServlet {
                 pc.setString(1, empid);
                 ResultSet rs = pc.executeQuery();
 
-                List<AttendanceRecord> leaveRequests = new ArrayList<>();
-                while (rs.next()) {
+                List<AttendanceRecord> leaveRequests = new ArrayList<>();    //to declare an array list 
+                while (rs.next()) 
+                {
                     AttendanceRecord leaveRequest = new AttendanceRecord();
                     leaveRequest.setEmpId(rs.getString("empId"));
                     leaveRequest.setUserid(rs.getInt("user_id"));
@@ -167,12 +193,35 @@ public class LeaveServlet extends HttpServlet {
                 }
                 
                 if (isApiRequest) {
-                    JSONArray jsonLeaveRequests = new JSONArray(leaveRequests);
+                    JSONArray jsonLeaveArray = new JSONArray();
+                    
+                    for (AttendanceRecord record : leaveRequests) 
+                    {
+                        JSONObject arrayResponse = new JSONObject();
+                        arrayResponse.put("empId", record.getEmpId());
+                        arrayResponse.put("userId", record.getUserid());
+                        arrayResponse.put("leaveType", record.getLeaveType());
+                        arrayResponse.put("startDate", record.getStartdate().toString());
+                        arrayResponse.put("endDate", record.getEnddate().toString());
+                        arrayResponse.put("requester", record.getRequester());
+                        arrayResponse.put("status", record.getStatus());
+                        arrayResponse.put("leavePaymentType", record.getLeavePaymentType());
+                        arrayResponse.put("daysTaken", record.getDaysTaken());
+                        jsonLeaveArray.put(arrayResponse);
+                    }
+                    
+                    // Wrap the array inside a response object
+                    //JSONObject jsonResponse1 = new JSONObject();
                     jsonResponse.put("status", "success");
-                    jsonResponse.put("leaveRequests", jsonLeaveRequests);
+                    jsonResponse.put("leaveRequests", jsonLeaveArray);
+                    
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("UTF-8");
                     response.setStatus(HttpServletResponse.SC_OK);
                     response.getWriter().write(jsonResponse.toString());
-                } else {
+                }
+
+                	else {
                     request.setAttribute("leaveRequests", leaveRequests);
                     request.getRequestDispatcher("leavestatus.jsp").forward(request, response);
                 }
@@ -189,10 +238,28 @@ public class LeaveServlet extends HttpServlet {
         }
     }
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        String role = (String) session.getAttribute("role");
-
+    /*protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        
+    	HttpSession session = request.getSession();
+        //String role = (String) session.getAttribute("role");
+    	
+    	String authHeader=request.getHeader("Authorization");
+    	String token=null;
+    	
+    	if(authHeader!=null && authHeader.startsWith("Bearer "))
+    	{
+    		token=authHeader.substring(7);
+    	}
+    	
+    	if(token==null)
+    	{
+    		token=(String) session.getAttribute("token");
+    	}
+    	
+    	Map<String, Object> claims=claim(token);
+    	String role=(String) claims.get("role");
+    	
+    	
         if (!"hr".equals(role)) {
             response.sendRedirect("login.jsp");
             return;
@@ -251,5 +318,31 @@ public class LeaveServlet extends HttpServlet {
                 response.getWriter().write(jsonResponse.toString());
             }
         }
+}*/
+//------------------------------------------------------------------------------------------------------    	
+    private Map<String, Object> claim(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(LoginServlet.SECRET_KEY) // Use the shared SECRET_KEY
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+
+        String username = claims.getSubject(); // Extract the "sub" claim
+        String empId = claims.get("empid", String.class); // Extract the "empId" claim
+        String role = claims.get("role", String.class);
+        
+        // Handling userid properly
+        Integer userid = null;
+        if (claims.get("userid") != null) {
+            userid = ((Number) claims.get("userid")).intValue();
+        }
+
+        Map<String, Object> claimMap = new HashMap<>();
+        claimMap.put("username", username);
+        claimMap.put("empId", empId);
+        claimMap.put("role", role);
+        claimMap.put("userid", userid); // Now it's allowed
+
+        return claimMap;
     }
 }

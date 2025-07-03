@@ -1,6 +1,7 @@
 package com.tcs.hr;
 
 import java.io.IOException;
+
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -28,7 +29,7 @@ public class LoginServlet extends HttpServlet {
 	
 	
 private static final String GEOCODING_API_URL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=%s,%s&key=AIzaSyAupWVhWnazaOJp85AYnCHxIMOzmmFg_D4";
-private static final Key SECRET_KEY = generateKey();
+public static final Key SECRET_KEY = generateKey();
 
 private static Key generateKey() {
     byte[] keyBytes = new byte[32]; 			// 256 bits for HS256
